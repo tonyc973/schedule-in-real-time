@@ -1,0 +1,150 @@
+// Programări — Bucharest salon booking app
+// SQLite in dev; schema kept Postgres-compatible (enums emulated as String + check
+// constants in code so this maps cleanly to native Postgres enums on migration).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums are emulated as String columns for SQLite portability. The allowed
+// values live in src/lib/enums.ts so app code and Postgres migration agree.
+//   Role:            CLIENT | SALON_OWNER
+//   SalonCategory:   HAIR | BARBER | NAILS | BEAUTY | SPA
+//   AppointmentStatus: PENDING | CONFIRMED | COMPLETED | CANCELLED
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         String   @default("CLIENT")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  ownedSalons  Salon[]       @relation("SalonOwner")
+  appointments Appointment[]
+  reviews      Review[]
+}
+
+model Salon {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  category    String // SalonCategory
+  address     String
+  lat         Float
+  lng         Float
+  photos      String // JSON-encoded array of URL strings (SQLite has no String[])
+  rating      Float    @default(0) // cached average of reviews
+  reviewCount Int      @default(0)
+  priceLevel  Int      @default(2) // 1..3
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ownerId String?
+  owner   User?   @relation("SalonOwner", fields: [ownerId], references: [id])
+
+  services     Service[]
+  staff        StaffMember[]
+  workingHours WorkingHours[]
+  appointments Appointment[]
+  reviews      Review[]
+
+  @@index([category])
+  @@index([lat, lng])
+}
+
+model Service {
+  id              String   @id @default(cuid())
+  salonId         String
+  salon           Salon    @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  name            String
+  durationMinutes Int
+  priceRON        Int
+  discountPercent Int? // null or 0 means no discount
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  appointments Appointment[]
+
+  @@index([salonId])
+}
+
+model StaffMember {
+  id         String   @id @default(cuid())
+  salonId    String
+  salon      Salon    @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  name       String
+  specialties String // JSON-encoded array of strings
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  appointments Appointment[]
+
+  @@index([salonId])
+}
+
+// One row per salon per weekday (0=Sunday .. 6=Saturday, JS getDay convention).
+// closed=true means the salon is shut that day; open/close are minutes-from-midnight
+// in salon-local (Europe/Bucharest) time.
+model WorkingHours {
+  id          String  @id @default(cuid())
+  salonId     String
+  salon       Salon   @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  weekday     Int // 0..6
+  openMinute  Int // minutes from midnight, e.g. 540 = 09:00
+  closeMinute Int // e.g. 1200 = 20:00
+  closed      Boolean @default(false)
+
+  @@unique([salonId, weekday])
+  @@index([salonId])
+}
+
+model Appointment {
+  id            String   @id @default(cuid())
+  clientId      String
+  client        User     @relation(fields: [clientId], references: [id])
+  salonId       String
+  salon         Salon    @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  serviceId     String
+  service       Service  @relation(fields: [serviceId], references: [id])
+  staffMemberId String
+  staffMember   StaffMember @relation(fields: [staffMemberId], references: [id])
+  startTime     DateTime // UTC
+  endTime       DateTime // UTC
+  status        String   @default("PENDING") // AppointmentStatus
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  review Review?
+
+  // Conflict detection: a given staff member can hold exactly one appointment that
+  // starts at a given instant. Combined with the transactional overlap check in the
+  // booking service this makes a double-booking impossible at the DB level.
+  @@unique([staffMemberId, startTime])
+  @@index([salonId, startTime])
+  @@index([staffMemberId, startTime])
+  @@index([status])
+}
+
+model Review {
+  id            String   @id @default(cuid())
+  clientId      String
+  client        User     @relation(fields: [clientId], references: [id])
+  salonId       String
+  salon         Salon    @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  appointmentId String   @unique // a review is tied to one completed appointment
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  rating        Int // 1..5
+  comment       String
+  createdAt     DateTime @default(now())
+
+  @@index([salonId])
+}
