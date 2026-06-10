@@ -26,11 +26,11 @@ interface Props {
 }
 
 const selectClass =
-  "select-dark h-9 cursor-pointer rounded-full border border-white/[0.08] bg-white/[0.04] pl-3.5 pr-8 text-[12.5px] font-medium text-stone-200 outline-none transition hover:border-white/[0.18] focus:border-[#e8c97d]/60";
+  "select-dark h-9 cursor-pointer rounded-full border border-stone-200 bg-white pl-3.5 pr-8 text-[12.5px] font-medium text-stone-700 shadow-sm outline-none transition hover:border-stone-300 focus:border-[#b8923f]";
 
 const pillBase =
-  "h-9 rounded-full border px-3.5 text-[12.5px] font-medium transition whitespace-nowrap";
-const pillIdle = "border-white/[0.08] bg-white/[0.04] text-stone-300 hover:border-white/[0.18]";
+  "h-9 rounded-full border px-3.5 text-[12.5px] font-medium shadow-sm transition whitespace-nowrap";
+const pillIdle = "border-stone-200 bg-white text-stone-600 hover:border-stone-300";
 
 export default function FilterBar({ filters, onChange, resultCount, loading }: Props) {
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) =>
@@ -82,7 +82,7 @@ export default function FilterBar({ filters, onChange, resultCount, loading }: P
         onClick={() => set("discount", !filters.discount)}
         className={`${pillBase} ${
           filters.discount
-            ? "border-rose-300/40 bg-rose-400/15 text-rose-200"
+            ? "border-rose-300 bg-rose-50 text-rose-700"
             : pillIdle
         }`}
       >
@@ -95,22 +95,22 @@ export default function FilterBar({ filters, onChange, resultCount, loading }: P
         onClick={() => set("within2h", !filters.within2h)}
         className={`${pillBase} inline-flex items-center gap-1.5 ${
           filters.within2h
-            ? "border-[#e8c97d]/50 bg-[#e8c97d]/15 text-[#ecd9a8]"
+            ? "border-[#d9c08a] bg-[#f6ecd6] text-[#7a5d28]"
             : pillIdle
         }`}
       >
         <span
           className={`h-1.5 w-1.5 rounded-full ${
-            filters.within2h ? "animate-pulse-dot bg-[#e8c97d]" : "bg-stone-500"
+            filters.within2h ? "animate-pulse-dot bg-[#b8923f]" : "bg-stone-400"
           }`}
         />
         Liber în 2h
       </button>
 
-      <span className="ml-auto inline-flex h-9 items-center gap-1.5 whitespace-nowrap pl-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+      <span className="ml-auto inline-flex h-9 items-center gap-1.5 whitespace-nowrap pl-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-stone-400">
         {loading ? (
           <>
-            <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-[#e8c97d]" />
+            <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-[#b8923f]" />
             Se caută…
           </>
         ) : (

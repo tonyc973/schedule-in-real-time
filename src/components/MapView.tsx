@@ -60,10 +60,10 @@ export default function MapView({ salons, highlightId }: Props) {
       zoomControl={false}
       className="h-full w-full"
     >
-      {/* Dark basemap (CARTO Dark Matter) — free tiles, no API key. */}
+      {/* Clean light basemap (CARTO Positron) — free tiles, no API key. */}
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         subdomains="abcd"
         maxZoom={19}
       />
@@ -84,10 +84,8 @@ export default function MapView({ salons, highlightId }: Props) {
                       className="h-24 w-full object-cover"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#14110f] via-transparent to-transparent" />
-                    <span
-                      className="absolute left-2.5 top-2.5 inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-stone-200 backdrop-blur"
-                    >
+                    <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-black/10" />
+                    <span className="absolute left-2.5 top-2.5 inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-stone-700 shadow-sm backdrop-blur">
                       <span
                         className="h-1.5 w-1.5 rounded-full"
                         style={{ backgroundColor: CATEGORY_COLORS[salon.category] }}
@@ -98,25 +96,27 @@ export default function MapView({ salons, highlightId }: Props) {
                 )}
                 <div className="p-3.5 pt-2.5">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-display text-[17px] font-semibold leading-snug text-stone-50">
+                    <h3 className="font-display text-[17px] font-semibold leading-snug text-stone-900">
                       {salon.name}
                     </h3>
-                    <span className="mt-0.5 text-[11px] font-medium text-stone-500">
+                    <span className="mt-0.5 text-[11px] font-medium text-stone-400">
                       {priceLevelSymbol(salon.priceLevel)}
                     </span>
                   </div>
                   <div className="mt-1 flex items-center gap-2 text-[12px]">
                     {salon.rating > 0 ? (
-                      <span className="text-stone-300">
-                        <span className="text-[#e8c97d]">★</span>{" "}
-                        <span className="font-semibold">{salon.rating.toFixed(1)}</span>{" "}
-                        <span className="text-stone-500">({salon.reviewCount})</span>
+                      <span className="text-stone-600">
+                        <span className="text-[#c9a227]">★</span>{" "}
+                        <span className="font-semibold text-stone-800">
+                          {salon.rating.toFixed(1)}
+                        </span>{" "}
+                        <span className="text-stone-400">({salon.reviewCount})</span>
                       </span>
                     ) : (
-                      <span className="text-stone-500">Fără recenzii</span>
+                      <span className="text-stone-400">Fără recenzii</span>
                     )}
                     {salon.minPriceRON !== null && (
-                      <span className="text-stone-500">· de la {formatPrice(salon.minPriceRON)}</span>
+                      <span className="text-stone-400">· de la {formatPrice(salon.minPriceRON)}</span>
                     )}
                   </div>
                   <div className="mt-2.5">
@@ -124,26 +124,26 @@ export default function MapView({ salons, highlightId }: Props) {
                       <span
                         className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
                           soon
-                            ? "border border-[#e8c97d]/30 bg-[#e8c97d]/15 text-[#ecd9a8]"
-                            : "border border-white/10 bg-white/5 text-stone-400"
+                            ? "border border-[#d9c08a] bg-[#f6ecd6] text-[#7a5d28]"
+                            : "border border-stone-200 bg-stone-50 text-stone-500"
                         }`}
                       >
                         <span
                           className={`h-1.5 w-1.5 rounded-full ${
-                            soon ? "animate-pulse-dot bg-[#e8c97d]" : "bg-stone-500"
+                            soon ? "animate-pulse-dot bg-[#b8923f]" : "bg-stone-400"
                           }`}
                         />
                         Liber {formatNextSlot(salon.nextSlot.startUtc)}
                       </span>
                     ) : (
-                      <span className="text-[11px] text-stone-500">
+                      <span className="text-[11px] text-stone-400">
                         Fără disponibilitate apropiată
                       </span>
                     )}
                   </div>
                   <Link
                     href={`/salon/${salon.id}`}
-                    className="mt-3 block rounded-xl bg-[#e8c97d] px-3 py-2 text-center text-[11px] font-bold uppercase tracking-[0.12em] text-[#1a160f] transition hover:bg-[#f0d99a]"
+                    className="mt-3 block rounded-xl bg-stone-900 px-3 py-2 text-center text-[11px] font-bold uppercase tracking-[0.12em] text-[#f3e3b8] transition hover:bg-stone-800"
                   >
                     Vezi detalii
                   </Link>

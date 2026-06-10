@@ -19,14 +19,14 @@ function AccountControl() {
       <div className="flex items-center gap-1.5">
         <Link
           href="/appointments"
-          className="rounded-full border border-[#e8c97d]/30 bg-[#e8c97d]/10 px-3 py-1.5 text-[11px] font-semibold text-[#ecd9a8] transition hover:bg-[#e8c97d]/20"
+          className="rounded-full border border-[#d9c08a] bg-[#f6ecd6] px-3 py-1.5 text-[11px] font-semibold text-[#7a5d28] transition hover:bg-[#f0e2c2]"
         >
           Programările mele
         </Link>
         <button
           type="button"
           onClick={() => signOut({ callbackUrl: "/" })}
-          className="rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium text-stone-400 transition hover:text-stone-200"
+          className="rounded-full border border-stone-200 bg-white px-3 py-1.5 text-[11px] font-medium text-stone-500 transition hover:text-stone-800"
         >
           Ieși
         </button>
@@ -36,7 +36,7 @@ function AccountControl() {
   return (
     <Link
       href="/login"
-      className="rounded-full bg-[#e8c97d] px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#1a160f] transition hover:bg-[#f0d99a]"
+      className="rounded-full bg-stone-900 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#f3e3b8] transition hover:bg-stone-800"
     >
       Intră în cont
     </Link>
@@ -47,14 +47,14 @@ function Wordmark({ compact = false }: { compact?: boolean }) {
   return (
     <div>
       <h1
-        className={`font-display font-semibold italic tracking-tight text-stone-50 ${
+        className={`font-display font-semibold italic tracking-tight text-stone-900 ${
           compact ? "text-[19px]" : "text-[26px] leading-none"
         }`}
       >
-        Programări<span className="not-italic text-[#e8c97d]">.</span>
+        Programări<span className="not-italic text-[#b8923f]">.</span>
       </h1>
       {!compact && (
-        <p className="mt-1.5 text-[9.5px] font-bold uppercase tracking-[0.24em] text-stone-500">
+        <p className="mt-1.5 text-[9.5px] font-bold uppercase tracking-[0.24em] text-stone-400">
           Saloane în București · live
         </p>
       )}
@@ -66,9 +66,9 @@ function Wordmark({ compact = false }: { compact?: boolean }) {
 const MapView = dynamic(() => import("./MapView"), {
   ssr: false,
   loading: () => (
-    <div className="grid h-full w-full place-items-center bg-[#0c0a09]">
+    <div className="grid h-full w-full place-items-center bg-[#eceae4]">
       <div className="flex items-center gap-2.5 text-stone-500">
-        <span className="h-2 w-2 animate-pulse-dot rounded-full bg-[#e8c97d]" />
+        <span className="h-2 w-2 animate-pulse-dot rounded-full bg-[#b8923f]" />
         <span className="text-[11px] font-semibold uppercase tracking-[0.2em]">
           Se încarcă harta…
         </span>
@@ -139,22 +139,22 @@ export default function HomeClient() {
     }
     if (error) {
       return (
-        <div className="rounded-2xl border border-rose-300/25 bg-rose-400/10 p-4 text-sm text-rose-200">
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
           {error}
         </div>
       );
     }
     if (salons.length === 0) {
       return (
-        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] px-5 py-8 text-center">
-          <p className="font-display text-lg italic text-stone-300">Niciun rezultat</p>
-          <p className="mt-1.5 text-xs text-stone-500">
+        <div className="rounded-2xl border border-stone-200 bg-white px-5 py-8 text-center shadow-sm">
+          <p className="font-display text-lg italic text-stone-700">Niciun rezultat</p>
+          <p className="mt-1.5 text-xs text-stone-400">
             Niciun salon nu corespunde filtrelor selectate.
           </p>
           <button
             type="button"
             onClick={() => setFilters(EMPTY_FILTERS)}
-            className="mt-4 rounded-full border border-[#e8c97d]/40 bg-[#e8c97d]/10 px-4 py-1.5 text-[11px] font-semibold text-[#ecd9a8] transition hover:bg-[#e8c97d]/20"
+            className="mt-4 rounded-full border border-[#d9c08a] bg-[#f6ecd6] px-4 py-1.5 text-[11px] font-semibold text-[#7a5d28] transition hover:bg-[#f0e2c2]"
           >
             Resetează filtrele
           </button>
@@ -177,20 +177,20 @@ export default function HomeClient() {
   }, [loading, error, salons, onHover]);
 
   return (
-    <main className="relative h-[100dvh] w-full overflow-hidden bg-[#0c0a09] font-sans">
+    <main className="relative h-[100dvh] w-full overflow-hidden bg-[#faf8f4] font-sans">
       {/* Full-bleed map */}
       <div className="absolute inset-0 z-0">
         <MapView salons={salons} highlightId={highlightId} />
       </div>
 
-      {/* Desktop: floating glass panel */}
+      {/* Desktop: floating panel */}
       <div className="animate-panel-in absolute bottom-4 left-4 top-4 z-[1000] hidden w-[404px] md:flex">
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-white/[0.07] bg-[#14110f]/[0.86] shadow-[0_32px_80px_-12px_rgba(0,0,0,0.8)] backdrop-blur-2xl">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-stone-900/[0.08] bg-white/[0.88] shadow-[0_24px_64px_-20px_rgba(28,25,23,0.35)] backdrop-blur-xl">
           <header className="flex items-start justify-between gap-3 px-5 pb-4 pt-5">
             <Wordmark />
             <AccountControl />
           </header>
-          <div className="border-y border-white/[0.06] px-5 py-3.5">
+          <div className="border-y border-stone-900/[0.06] bg-white/40 px-5 py-3.5">
             <FilterBar
               filters={filters}
               onChange={setFilters}
@@ -206,11 +206,11 @@ export default function HomeClient() {
 
       {/* Mobile: header + filter strip */}
       <div className="animate-drop-in absolute inset-x-0 top-0 z-[1000] flex flex-col gap-2 p-3 md:hidden">
-        <div className="flex items-center justify-between rounded-2xl border border-white/[0.07] bg-[#14110f]/[0.88] px-4 py-2.5 backdrop-blur-xl">
+        <div className="flex items-center justify-between rounded-2xl border border-stone-900/[0.08] bg-white/[0.92] px-4 py-2.5 shadow-lg backdrop-blur-xl">
           <Wordmark compact />
           <AccountControl />
         </div>
-        <div className="overflow-x-auto rounded-2xl border border-white/[0.07] bg-[#14110f]/[0.88] px-3 py-2.5 backdrop-blur-xl [scrollbar-width:none]">
+        <div className="overflow-x-auto rounded-2xl border border-stone-900/[0.08] bg-white/[0.92] px-3 py-2.5 shadow-lg backdrop-blur-xl [scrollbar-width:none]">
           <FilterBar
             filters={filters}
             onChange={setFilters}
@@ -223,8 +223,8 @@ export default function HomeClient() {
       {/* Mobile: results sheet */}
       {viewMode === "list" && (
         <div className="absolute inset-x-0 bottom-0 top-[124px] z-[999] md:hidden">
-          <div className="panel-scroll h-full overflow-y-auto rounded-t-3xl border-t border-white/[0.1] bg-[#14110f]/[0.96] px-3.5 pb-28 pt-4 backdrop-blur-2xl">
-            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-white/15" />
+          <div className="panel-scroll h-full overflow-y-auto rounded-t-3xl border-t border-stone-900/[0.1] bg-[#faf8f4]/[0.97] px-3.5 pb-28 pt-4 backdrop-blur-xl">
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-stone-900/15" />
             {listContent}
           </div>
         </div>
@@ -234,7 +234,7 @@ export default function HomeClient() {
       <button
         type="button"
         onClick={() => setViewMode((m) => (m === "map" ? "list" : "map"))}
-        className="fixed bottom-5 left-1/2 z-[1001] -translate-x-1/2 rounded-full border border-[#e8c97d]/40 bg-[#14110f]/95 px-6 py-2.5 text-[12px] font-bold uppercase tracking-[0.14em] text-[#ecd9a8] shadow-[0_12px_40px_rgba(0,0,0,0.6)] backdrop-blur-xl transition hover:bg-[#1c1815] md:hidden"
+        className="fixed bottom-5 left-1/2 z-[1001] -translate-x-1/2 rounded-full bg-stone-900 px-6 py-2.5 text-[12px] font-bold uppercase tracking-[0.14em] text-[#f3e3b8] shadow-[0_12px_36px_rgba(28,25,23,0.4)] transition hover:bg-stone-800 md:hidden"
       >
         {viewMode === "map" ? "Listă" : "Hartă"}
       </button>
