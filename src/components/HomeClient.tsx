@@ -8,25 +8,25 @@ import type { SalonListItemDTO } from "@/lib/dto";
 import FilterBar, { EMPTY_FILTERS, type Filters } from "./FilterBar";
 import SalonCard from "./SalonCard";
 
-// Compact account control shown in the map overlay header.
+// Compact account control shown in the panel / mobile header.
 function AccountControl() {
   const { data: session, status } = useSession();
   if (status === "loading") {
-    return <span className="h-7 w-20 animate-pulse rounded-lg bg-white/70" />;
+    return <span className="skeleton h-8 w-24 rounded-full" />;
   }
   if (session?.user) {
     return (
       <div className="flex items-center gap-1.5">
         <Link
           href="/appointments"
-          className="rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 shadow hover:bg-slate-50"
+          className="rounded-full border border-[#e8c97d]/30 bg-[#e8c97d]/10 px-3 py-1.5 text-[11px] font-semibold text-[#ecd9a8] transition hover:bg-[#e8c97d]/20"
         >
           Programările mele
         </Link>
         <button
           type="button"
           onClick={() => signOut({ callbackUrl: "/" })}
-          className="rounded-lg bg-white/80 px-2.5 py-1.5 text-xs font-medium text-slate-500 shadow hover:bg-white"
+          className="rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium text-stone-400 transition hover:text-stone-200"
         >
           Ieși
         </button>
@@ -36,10 +36,29 @@ function AccountControl() {
   return (
     <Link
       href="/login"
-      className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-slate-700"
+      className="rounded-full bg-[#e8c97d] px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#1a160f] transition hover:bg-[#f0d99a]"
     >
-      Autentificare
+      Intră în cont
     </Link>
+  );
+}
+
+function Wordmark({ compact = false }: { compact?: boolean }) {
+  return (
+    <div>
+      <h1
+        className={`font-display font-semibold italic tracking-tight text-stone-50 ${
+          compact ? "text-[19px]" : "text-[26px] leading-none"
+        }`}
+      >
+        Programări<span className="not-italic text-[#e8c97d]">.</span>
+      </h1>
+      {!compact && (
+        <p className="mt-1.5 text-[9.5px] font-bold uppercase tracking-[0.24em] text-stone-500">
+          Saloane în București · live
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -47,8 +66,13 @@ function AccountControl() {
 const MapView = dynamic(() => import("./MapView"), {
   ssr: false,
   loading: () => (
-    <div className="grid h-full w-full place-items-center bg-sky-100 text-slate-500">
-      Se încarcă harta…
+    <div className="grid h-full w-full place-items-center bg-[#0c0a09]">
+      <div className="flex items-center gap-2.5 text-stone-500">
+        <span className="h-2 w-2 animate-pulse-dot rounded-full bg-[#e8c97d]" />
+        <span className="text-[11px] font-semibold uppercase tracking-[0.2em]">
+          Se încarcă harta…
+        </span>
+      </div>
     </div>
   ),
 });
@@ -106,52 +130,87 @@ export default function HomeClient() {
   const listContent = useMemo(() => {
     if (loading && salons.length === 0) {
       return (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-28 animate-pulse rounded-xl bg-slate-100" />
+            <div key={i} className="skeleton h-[104px] rounded-2xl" />
           ))}
         </div>
       );
     }
     if (error) {
       return (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+        <div className="rounded-2xl border border-rose-300/25 bg-rose-400/10 p-4 text-sm text-rose-200">
           {error}
         </div>
       );
     }
     if (salons.length === 0) {
       return (
-        <div className="rounded-xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
-          Niciun salon nu corespunde filtrelor selectate.
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] px-5 py-8 text-center">
+          <p className="font-display text-lg italic text-stone-300">Niciun rezultat</p>
+          <p className="mt-1.5 text-xs text-stone-500">
+            Niciun salon nu corespunde filtrelor selectate.
+          </p>
+          <button
+            type="button"
+            onClick={() => setFilters(EMPTY_FILTERS)}
+            className="mt-4 rounded-full border border-[#e8c97d]/40 bg-[#e8c97d]/10 px-4 py-1.5 text-[11px] font-semibold text-[#ecd9a8] transition hover:bg-[#e8c97d]/20"
+          >
+            Resetează filtrele
+          </button>
         </div>
       );
     }
     return (
-      <div className="space-y-3">
-        {salons.map((salon) => (
-          <SalonCard key={salon.id} salon={salon} onHover={onHover} />
+      <div className="space-y-2.5">
+        {salons.map((salon, i) => (
+          <div
+            key={salon.id}
+            className="animate-card-in"
+            style={{ animationDelay: `${Math.min(i, 12) * 40}ms` }}
+          >
+            <SalonCard salon={salon} onHover={onHover} />
+          </div>
         ))}
       </div>
     );
   }, [loading, error, salons, onHover]);
 
   return (
-    <main className="relative h-[100dvh] w-full overflow-hidden">
-      {/* Overlay header + filter bar */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-[1000] p-3">
-        <div className="mx-auto max-w-5xl space-y-2">
-          <div className="pointer-events-auto flex items-center gap-2">
-            <span className="rounded-xl bg-slate-900 px-3 py-1.5 text-sm font-bold text-white shadow">
-              Programări
-            </span>
-            <span className="hidden text-xs text-slate-600 sm:inline">
-              Saloane în București · disponibilitate live
-            </span>
-            <div className="ml-auto">
-              <AccountControl />
-            </div>
+    <main className="relative h-[100dvh] w-full overflow-hidden bg-[#0c0a09] font-sans">
+      {/* Full-bleed map */}
+      <div className="absolute inset-0 z-0">
+        <MapView salons={salons} highlightId={highlightId} />
+      </div>
+
+      {/* Desktop: floating glass panel */}
+      <div className="animate-panel-in absolute bottom-4 left-4 top-4 z-[1000] hidden w-[404px] md:flex">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-white/[0.07] bg-[#14110f]/[0.86] shadow-[0_32px_80px_-12px_rgba(0,0,0,0.8)] backdrop-blur-2xl">
+          <header className="flex items-start justify-between gap-3 px-5 pb-4 pt-5">
+            <Wordmark />
+            <AccountControl />
+          </header>
+          <div className="border-y border-white/[0.06] px-5 py-3.5">
+            <FilterBar
+              filters={filters}
+              onChange={setFilters}
+              resultCount={salons.length}
+              loading={loading}
+            />
           </div>
+          <div className="panel-scroll min-h-0 flex-1 overflow-y-auto px-3.5 py-3.5">
+            {listContent}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile: header + filter strip */}
+      <div className="animate-drop-in absolute inset-x-0 top-0 z-[1000] flex flex-col gap-2 p-3 md:hidden">
+        <div className="flex items-center justify-between rounded-2xl border border-white/[0.07] bg-[#14110f]/[0.88] px-4 py-2.5 backdrop-blur-xl">
+          <Wordmark compact />
+          <AccountControl />
+        </div>
+        <div className="overflow-x-auto rounded-2xl border border-white/[0.07] bg-[#14110f]/[0.88] px-3 py-2.5 backdrop-blur-xl [scrollbar-width:none]">
           <FilterBar
             filters={filters}
             onChange={setFilters}
@@ -161,31 +220,23 @@ export default function HomeClient() {
         </div>
       </div>
 
-      <div className="flex h-full">
-        {/* List / sidebar */}
-        <aside
-          className={`h-full w-full overflow-y-auto bg-slate-50 px-3 pb-24 pt-36 md:w-[400px] md:border-r md:border-slate-200 ${
-            viewMode === "map" ? "hidden md:block" : "block"
-          }`}
-        >
-          {listContent}
-        </aside>
-
-        {/* Map */}
-        <div
-          className={`relative h-full flex-1 ${viewMode === "list" ? "hidden md:block" : "block"}`}
-        >
-          <MapView salons={salons} highlightId={highlightId} />
+      {/* Mobile: results sheet */}
+      {viewMode === "list" && (
+        <div className="absolute inset-x-0 bottom-0 top-[124px] z-[999] md:hidden">
+          <div className="panel-scroll h-full overflow-y-auto rounded-t-3xl border-t border-white/[0.1] bg-[#14110f]/[0.96] px-3.5 pb-28 pt-4 backdrop-blur-2xl">
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-white/15" />
+            {listContent}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Mobile map/list toggle */}
       <button
         type="button"
         onClick={() => setViewMode((m) => (m === "map" ? "list" : "map"))}
-        className="fixed bottom-5 left-1/2 z-[1000] -translate-x-1/2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-lg md:hidden"
+        className="fixed bottom-5 left-1/2 z-[1001] -translate-x-1/2 rounded-full border border-[#e8c97d]/40 bg-[#14110f]/95 px-6 py-2.5 text-[12px] font-bold uppercase tracking-[0.14em] text-[#ecd9a8] shadow-[0_12px_40px_rgba(0,0,0,0.6)] backdrop-blur-xl transition hover:bg-[#1c1815] md:hidden"
       >
-        {viewMode === "map" ? "📋 Listă" : "🗺️ Hartă"}
+        {viewMode === "map" ? "Listă" : "Hartă"}
       </button>
     </main>
   );

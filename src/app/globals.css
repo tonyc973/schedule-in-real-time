@@ -2,9 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------------------------------------------------------------------------
+   Velvet-noir design system (map discovery page)
+   Surfaces are warm near-blacks; the accent is champagne gold. Detail/booking
+   pages keep their own light wrappers and are unaffected by the body color.
+--------------------------------------------------------------------------- */
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --noir-950: #0c0a09;
+  --noir-900: #14110f;
+  --noir-800: #1c1815;
+  --gold: #e8c97d;
+  --gold-soft: #ecd9a8;
+  --ink: #faf7f2;
 }
 
 html,
@@ -13,20 +22,177 @@ body {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--noir-950);
+  color: var(--ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Leaflet container must fill its parent. */
+::selection {
+  background: rgba(232, 201, 125, 0.35);
+  color: #fff;
+}
+
+/* Slim, unobtrusive scrollbar for the floating results panel. */
+.panel-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(232, 201, 125, 0.25) transparent;
+}
+.panel-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.panel-scroll::-webkit-scrollbar-thumb {
+  background: rgba(232, 201, 125, 0.22);
+  border-radius: 99px;
+}
+.panel-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Dark pill <select> with a custom chevron (appearance reset). */
+.select-dark {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23a8a29e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+}
+.select-dark option {
+  background: var(--noir-900);
+  color: #e7e5e4;
+}
+
+/* ------------------------------- Leaflet ---------------------------------- */
+
 .leaflet-container {
   width: 100%;
   height: 100%;
   font: inherit;
-  background: #aadaff;
+  background: var(--noir-950);
 }
 
-/* Custom category pin marker (built with L.divIcon). */
+/* Zoom control → dark glass */
+.leaflet-bar {
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5) !important;
+}
+.leaflet-bar a {
+  background: rgba(20, 17, 15, 0.85) !important;
+  color: #d6d3d1 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(8px);
+  width: 34px !important;
+  height: 34px !important;
+  line-height: 34px !important;
+}
+.leaflet-bar a:hover {
+  background: rgba(35, 30, 26, 0.95) !important;
+  color: var(--gold-soft) !important;
+}
+.leaflet-bar a.leaflet-disabled {
+  color: #57534e !important;
+}
+
+/* Attribution → quiet */
+.leaflet-control-attribution {
+  background: rgba(12, 10, 9, 0.65) !important;
+  color: #78716c !important;
+  font-size: 10px !important;
+  backdrop-filter: blur(6px);
+  border-radius: 8px 0 0 0;
+}
+.leaflet-control-attribution a {
+  color: #a8a29e !important;
+}
+
+/* --------------------------- Main map markers ------------------------------ */
+
+.salon-marker {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+  background: var(--noir-900);
+  border: 2px solid var(--cat, var(--gold));
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.55),
+    0 0 0 3px rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+.salon-marker:hover {
+  transform: scale(1.14);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.6),
+    0 0 0 4px rgba(255, 255, 255, 0.07);
+  z-index: 10;
+}
+.salon-marker__glyph {
+  font-size: 14px;
+  line-height: 1;
+}
+/* Champagne halo when the salon has a slot within 2h */
+.salon-marker.is-soon::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 9999px;
+  border: 2px solid rgba(232, 201, 125, 0.7);
+  animation: halo 2.2s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes halo {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.9;
+  }
+  70% {
+    transform: scale(1.18);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ------------------------------ Map popup --------------------------------- */
+
+.salon-popup .leaflet-popup-content-wrapper {
+  background: rgba(20, 17, 15, 0.94);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(232, 201, 125, 0.16);
+  border-radius: 18px;
+  box-shadow: 0 28px 72px rgba(0, 0, 0, 0.65);
+  color: var(--ink);
+  padding: 0;
+  overflow: hidden;
+}
+.salon-popup .leaflet-popup-content {
+  margin: 0 !important;
+  line-height: 1.45;
+}
+.salon-popup .leaflet-popup-tip {
+  background: rgba(20, 17, 15, 0.94);
+  border: 1px solid rgba(232, 201, 125, 0.16);
+  box-shadow: none;
+}
+.salon-popup a.leaflet-popup-close-button {
+  top: 7px !important;
+  right: 8px !important;
+  width: 24px !important;
+  height: 24px !important;
+  font-size: 18px !important;
+  color: #fff !important;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.7);
+  z-index: 10;
+}
+
+/* --------------------------- Detail-page mini map -------------------------- */
+/* Legacy pin kept for MiniMap on /salon/[id] (light theme). */
 .salon-pin {
   width: 30px;
   height: 30px;
@@ -42,21 +208,85 @@ body {
   font-size: 13px;
   line-height: 1;
 }
-.salon-pin.has-soon {
-  animation: pulse 1.8s infinite;
+
+/* ------------------------------ Animations -------------------------------- */
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
-@keyframes pulse {
-  0% {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(16, 185, 129, 0.5);
+.animate-panel-in {
+  animation: panel-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
-  70% {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 10px rgba(16, 185, 129, 0);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
+}
+.animate-card-in {
+  animation: card-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes drop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-drop-in {
+  animation: drop-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Skeleton shimmer on dark */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(232, 201, 125, 0.06),
+    transparent
+  );
+  animation: shimmer 1.6s infinite;
+}
+@keyframes shimmer {
   100% {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(16, 185, 129, 0);
+    transform: translateX(100%);
   }
 }
 
-.leaflet-popup-content {
-  margin: 12px 14px;
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 1.4s ease-in-out infinite;
 }
