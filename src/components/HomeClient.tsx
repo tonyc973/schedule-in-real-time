@@ -2,9 +2,46 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 import type { SalonListItemDTO } from "@/lib/dto";
 import FilterBar, { EMPTY_FILTERS, type Filters } from "./FilterBar";
 import SalonCard from "./SalonCard";
+
+// Compact account control shown in the map overlay header.
+function AccountControl() {
+  const { data: session, status } = useSession();
+  if (status === "loading") {
+    return <span className="h-7 w-20 animate-pulse rounded-lg bg-white/70" />;
+  }
+  if (session?.user) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <Link
+          href="/appointments"
+          className="rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 shadow hover:bg-slate-50"
+        >
+          Programările mele
+        </Link>
+        <button
+          type="button"
+          onClick={() => signOut({ callbackUrl: "/" })}
+          className="rounded-lg bg-white/80 px-2.5 py-1.5 text-xs font-medium text-slate-500 shadow hover:bg-white"
+        >
+          Ieși
+        </button>
+      </div>
+    );
+  }
+  return (
+    <Link
+      href="/login"
+      className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-slate-700"
+    >
+      Autentificare
+    </Link>
+  );
+}
 
 // Leaflet touches `window`, so the map is client-only (no SSR).
 const MapView = dynamic(() => import("./MapView"), {
@@ -111,6 +148,9 @@ export default function HomeClient() {
             <span className="hidden text-xs text-slate-600 sm:inline">
               Saloane în București · disponibilitate live
             </span>
+            <div className="ml-auto">
+              <AccountControl />
+            </div>
           </div>
           <FilterBar
             filters={filters}

@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import type { SalonDetailDTO } from "@/lib/dto";
 import { formatDuration, formatNextSlot, formatPrice } from "@/lib/format";
 import { WITHIN_2H_MINUTES } from "@/lib/constants";
 import { CategoryBadge, DiscountBadge, NextSlotBadge, PriceLevel, RatingStars } from "./ui";
+import BookingFlow from "./booking/BookingFlow";
+import TopNav from "./TopNav";
 
 const MiniMap = dynamic(() => import("./MiniMap"), {
   ssr: false,
@@ -30,14 +31,7 @@ export default function SalonDetail({ salon }: { salon: SalonDetailDTO }) {
 
   return (
     <div className="min-h-[100dvh] bg-slate-50 pb-16">
-      {/* Top bar */}
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-3">
-          <Link href="/" className="text-sm font-medium text-slate-600 hover:text-slate-900">
-            ← Înapoi la hartă
-          </Link>
-        </div>
-      </header>
+      <TopNav />
 
       <div className="mx-auto max-w-4xl px-4">
         {/* Gallery */}
@@ -94,6 +88,11 @@ export default function SalonDetail({ salon }: { salon: SalonDetailDTO }) {
           <p className="mt-3 text-sm leading-relaxed text-slate-600">{salon.description}</p>
         </div>
 
+        {/* Booking flow (BookingFlow renders its own titled card) */}
+        <div id="rezerva" className="mt-4 scroll-mt-20">
+          <BookingFlow salon={salon} />
+        </div>
+
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           {/* Services */}
           <section className="md:col-span-2">
@@ -131,9 +130,12 @@ export default function SalonDetail({ salon }: { salon: SalonDetailDTO }) {
                   <DiscountBadge />
                 </div>
               )}
-              <p className="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500">
-                Rezervarea online va fi disponibilă în curând (Pasul 2).
-              </p>
+              <a
+                href="#rezerva"
+                className="mt-4 inline-block rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-700"
+              >
+                Rezervă acum
+              </a>
             </div>
 
             {/* Staff */}

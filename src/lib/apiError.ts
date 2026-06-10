@@ -7,6 +7,7 @@ export type ApiErrorCode =
   | "NOT_FOUND"
   | "CONFLICT"
   | "UNAUTHORIZED"
+  | "FORBIDDEN"
   | "INTERNAL";
 
 export function errorResponse(code: ApiErrorCode, message: string, status: number) {

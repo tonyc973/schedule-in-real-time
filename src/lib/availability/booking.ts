@@ -9,7 +9,7 @@
 
 import { intervalsOverlap } from "./slots";
 import { BLOCKING_STATUSES } from "../enums";
-import type { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma, type PrismaClient } from "@prisma/client";
 
 export interface ExistingBooking {
   staffMemberId: string;
@@ -87,62 +87,89 @@ export interface BookAppointmentInput {
   endTime: Date; // UTC
 }
 
+const MAX_BOOKING_RETRIES = 3;
+
+/**
+ * Serializable isolation is what makes the read-overlap-then-insert atomic
+ * against concurrent writers. Prisma only supports an explicit isolation level
+ * on server databases (Postgres/MySQL/SQL Server); SQLite already serializes
+ * writes, so we omit the option there to avoid a runtime "isolation levels are
+ * not supported" error in dev. The schema is Postgres-compatible (see
+ * CLAUDE.md), so in production this runs Serializable.
+ */
+function serializableTxOptions(): { isolationLevel: Prisma.TransactionIsolationLevel } | undefined {
+  const url = process.env.DATABASE_URL ?? "";
+  if (/^(postgres(ql)?|mysql|sqlserver):/i.test(url)) {
+    return { isolationLevel: Prisma.TransactionIsolationLevel.Serializable };
+  }
+  return undefined;
+}
+
+function isKnownCode(err: unknown, code: string): boolean {
+  return err instanceof Prisma.PrismaClientKnownRequestError && err.code === code;
+}
+
 /**
  * Transactionally create an appointment, rejecting double-bookings.
  *
- * Conflict detection is twofold:
- *   - inside a serializable-style transaction we re-check for any blocking
- *     appointment whose [start,end) overlaps the requested span for this staff
- *     member, and
- *   - the DB @@unique([staffMemberId, startTime]) constraint is the hard backstop
- *     if two transactions race past the read.
+ * Conflict detection is layered:
+ *   1. Inside a Serializable transaction (on databases that support it) we
+ *      re-check for any blocking appointment whose [start,end) overlaps the
+ *      requested span for this staff member — this is what prevents overlapping
+ *      bookings with *different* start times, which the unique index cannot.
+ *   2. The @@unique([staffMemberId, startTime]) constraint is the hard backstop
+ *      for the identical-start race (surfaces as P2002).
+ *   3. A serialization failure (P2034) under contention is retried transparently
+ *      a few times before giving up.
  *
- * Either way, exactly one of two simultaneous identical requests succeeds; the
- * loser gets a BookingConflictError.
+ * Net effect: of two concurrent requests that would overlap on the same staff
+ * member, exactly one succeeds; the loser gets a BookingConflictError.
  */
 export async function bookAppointment(
   prisma: PrismaClient,
   input: BookAppointmentInput,
 ): Promise<{ id: string }> {
-  try {
-    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      const overlapping = await tx.appointment.findFirst({
-        where: {
-          staffMemberId: input.staffMemberId,
-          status: { in: BLOCKING_STATUSES },
-          // overlap: existing.start < newEnd AND existing.end > newStart
-          startTime: { lt: input.endTime },
-          endTime: { gt: input.startTime },
-        },
-        select: { id: true },
-      });
-      if (overlapping) {
+  const txOptions = serializableTxOptions();
+
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        const overlapping = await tx.appointment.findFirst({
+          where: {
+            staffMemberId: input.staffMemberId,
+            status: { in: BLOCKING_STATUSES },
+            // overlap: existing.start < newEnd AND existing.end > newStart
+            startTime: { lt: input.endTime },
+            endTime: { gt: input.startTime },
+          },
+          select: { id: true },
+        });
+        if (overlapping) {
+          throw new BookingConflictError();
+        }
+        return await tx.appointment.create({
+          data: {
+            clientId: input.clientId,
+            salonId: input.salonId,
+            serviceId: input.serviceId,
+            staffMemberId: input.staffMemberId,
+            startTime: input.startTime,
+            endTime: input.endTime,
+            status: "PENDING",
+          },
+          select: { id: true },
+        });
+      }, txOptions);
+    } catch (err) {
+      // Identical-start race lost to the unique constraint → genuine conflict.
+      if (isKnownCode(err, "P2002")) {
         throw new BookingConflictError();
       }
-      const created = await tx.appointment.create({
-        data: {
-          clientId: input.clientId,
-          salonId: input.salonId,
-          serviceId: input.serviceId,
-          staffMemberId: input.staffMemberId,
-          startTime: input.startTime,
-          endTime: input.endTime,
-          status: "PENDING",
-        },
-        select: { id: true },
-      });
-      return created;
-    });
-  } catch (err) {
-    // Unique-constraint violation (P2002) means another tx won the race.
-    if (
-      err &&
-      typeof err === "object" &&
-      "code" in err &&
-      (err as { code?: string }).code === "P2002"
-    ) {
-      throw new BookingConflictError();
+      // Serializable write conflict → retry a bounded number of times.
+      if (isKnownCode(err, "P2034") && attempt < MAX_BOOKING_RETRIES) {
+        continue;
+      }
+      throw err;
     }
-    throw err;
   }
 }

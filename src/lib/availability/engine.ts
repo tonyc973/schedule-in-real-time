@@ -66,7 +66,7 @@ function busyForDay(
   const dayEndMs = dayMidnightUtcMs + 24 * 60 * 60 * 1000;
   const out: BusyInterval[] = [];
   for (const appt of appointments) {
-    if (!BLOCKING_STATUSES.includes(appt.status as never)) continue;
+    if (!(BLOCKING_STATUSES as readonly string[]).includes(appt.status)) continue;
     const startMs = appt.startTime.getTime();
     const endMs = appt.endTime.getTime();
     // Skip appointments that don't touch this day at all.

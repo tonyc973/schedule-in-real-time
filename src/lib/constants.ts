@@ -3,6 +3,9 @@
 /** A salon counts as "available soon" if its next slot is within this many minutes. */
 export const WITHIN_2H_MINUTES = 120;
 
+/** An appointment can be cancelled only up to this many minutes before its start. */
+export const CANCEL_WINDOW_MINUTES = 120;
+
 /** How many days ahead the next-available search scans. */
 export const HORIZON_DAYS = 10;
 

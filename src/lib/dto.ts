@@ -75,6 +75,20 @@ export interface SalonDetailDTO {
   nextSlot: NextSlotDTO | null;
 }
 
+export interface AppointmentDTO {
+  id: string;
+  status: string;
+  startUtc: string;
+  endUtc: string;
+  durationMinutes: number;
+  priceRON: number; // final price actually charged (discount applied)
+  salon: { id: string; name: string; address: string; category: SalonCategory };
+  serviceName: string;
+  staffName: string;
+  canCancel: boolean;
+  cancelReason: string | null;
+}
+
 export function safeJsonArray(value: string): string[] {
   try {
     const parsed = JSON.parse(value);
