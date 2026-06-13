@@ -4,7 +4,7 @@
 
 ### A map-first booking platform for beauty services in Bucharest — with a real-time availability engine.
 
-*Find saloane, frizerii, unghii, barbershops & spa near you on a live map, see who's free, and book in seconds.*
+*Find hair salons, barbershops, nail studios, beauty parlours and spas near you on a live map, see who's free, and book in seconds.*
 
 ![Next.js](https://img.shields.io/badge/Next.js_14-000000?style=flat-square&logo=next.js&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript_strict-3178C6?style=flat-square&logo=typescript&logoColor=white)
@@ -22,7 +22,7 @@
   <img src="docs/screenshots/01-map-home.png" alt="Lumé — map discovery page" width="900" />
 </p>
 
-> **The killer feature — _„liber în 2h lângă tine”_.** Every salon's *next available slot* is computed live and shown on the map. Toggle **„Liber în 2h”** and the markers instantly narrow to places you can walk into within the next two hours — like watching nearby drivers on a ride-hailing app, but for an empty chair at the salon.
+> **The killer feature — "free within 2 hours, near you".** Every salon's *next available slot* is computed live and shown on the map. Flip the **"Liber în 2h"** toggle (the app is in Romanian — this means *"free in 2h"*) and the markers instantly narrow to places you can walk into within the next two hours — like watching nearby drivers on a ride-hailing app, but for an empty chair at the salon.
 
 ---
 
@@ -30,7 +30,7 @@
 
 - 🗺️ **Map-first discovery** — full-screen Leaflet map of Bucharest with custom per-category markers, a glowing halo on salons free within 2h, and rich photo popups.
 - ⚡ **Real-time availability** — a purpose-built engine intersects working hours, staff schedules, service duration and existing bookings to produce bookable 15-minute slots.
-- 📅 **Frictionless booking** — pick a service → a specialist (or *„Oricine”*) → a day → a slot, with the discounted total shown before you confirm. Browsing is anonymous; you only sign in at the confirm step.
+- 📅 **Frictionless booking** — pick a service → a specialist (or **"Oricine"** — *anyone available*) → a day → a slot, with the discounted total shown before you confirm. Browsing is anonymous; you only sign in at the confirm step.
 - 🔒 **Correct under concurrency** — booking is transactional with conflict detection, so a double-booking is impossible even when two people race for the same slot.
 - 🇷🇴 **Romanian throughout** — `ro-RO` dates and currency, Europe/Bucharest timezone, prices in RON.
 - 📱 **Mobile-first & responsive** — a floating glass results panel on desktop, a bottom-sheet list + map/list toggle on mobile.
@@ -75,7 +75,7 @@ Upcoming and past bookings, with cancellation allowed up to 2 hours before the s
 
 ## 🧠 The heart: the availability engine
 
-This is the part that makes the product work, so it's built to be **deterministic and thoroughly tested**. The engine lives in [`src/lib/availability/`](src/lib/availability/), split into four deliberately separated layers — with booking *policy* (the cancellation window and `„Oricine”` selection) alongside it in [`booking-rules.ts`](src/lib/booking-rules.ts), kept just as pure and testable:
+This is the part that makes the product work, so it's built to be **deterministic and thoroughly tested**. The engine lives in [`src/lib/availability/`](src/lib/availability/), split into four deliberately separated layers — with booking *policy* (the cancellation window and "any-specialist" selection) alongside it in [`booking-rules.ts`](src/lib/booking-rules.ts), kept just as pure and testable:
 
 | Layer | File | Responsibility |
 | --- | --- | --- |
@@ -92,7 +92,7 @@ Booking safety is layered so it holds even on Postgres under real concurrency:
 2. Inside it, an **overlap check** rejects any blocking appointment intersecting the requested span for that staff member — this catches overlaps the index can't.
 3. A **`@@unique([staffMemberId, startTime])`** constraint is the hard backstop for the identical-start race.
 
-The result: of two concurrent requests for the same slot, **exactly one** succeeds — the other gets a clean `409`. If a `„Oricine”` request loses the race, the server automatically retries onto another free specialist instead of failing.
+The result: of two concurrent requests for the same slot, **exactly one** succeeds — the other gets a clean `409`. If an "any-specialist" request loses the race, the server automatically retries onto another free specialist instead of failing.
 
 > The server is **authoritative on availability** — it recomputes the day's slots on every booking request and refuses a start time the client may have tampered with.
 
@@ -117,7 +117,7 @@ Prisma client → SQLite (dev)  ·  Postgres-compatible schema for production
 ```
 
 **Three invariants the codebase holds to:**
-1. All slot computation flows through `src/lib/availability`; booking policy (cancellation window, `„Oricine”` selection) lives in dedicated, equally pure modules — never inlined into routes or components.
+1. All slot computation flows through `src/lib/availability`; booking policy (cancellation window, "any-specialist" selection) lives in dedicated, equally pure modules — never inlined into routes or components.
 2. The server is authoritative on availability; a tampered request can't double-book.
 3. Timestamps are UTC in the DB; the only timezone boundary is `time.ts` (+ `format.ts` for display).
 
@@ -139,7 +139,7 @@ src/
   lib/
     availability/                # slots · time · engine · booking (+ tests)
     salons.ts · appointments.ts  # data-access services
-    booking-rules.ts             # cancellation window · „Oricine” selection (pure)
+    booking-rules.ts             # cancellation window · any-specialist selection (pure)
     auth.ts · validation.ts · dto.ts · enums.ts · format.ts
 prisma/
   schema.prisma                  # Postgres-compatible schema (SQLite in dev)
@@ -213,7 +213,7 @@ npm run test                # 39 Vitest tests
 - **Slot computation** — the 15-minute grid, edge-of-closing-time fits, overlapping bookings, per-staff availability.
 - **Engine** — timezone correctness (UTC ↔ Bucharest), hiding past slots, next-available rollover, cancelled appointments freeing slots.
 - **Booking** — the double-booking race (exactly one of two wins), Serializable retry on serialization failure, conflict mapping.
-- **Rules** — the 2-hour cancellation window and `„Oricine”` staff selection.
+- **Rules** — the 2-hour cancellation window and "any-specialist" staff selection.
 
 ---
 
