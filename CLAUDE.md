@@ -1,4 +1,4 @@
-# CLAUDE.md — Programări (Bucharest salon booking app)
+# CLAUDE.md — Lumé (Bucharest salon booking app)
 
 ## Project
 Map-first booking platform for beauty services (saloane, frizerii, unghii) in Bucharest. Full spec lives in `SPEC.md` — consult it for feature requirements, do not duplicate it here.

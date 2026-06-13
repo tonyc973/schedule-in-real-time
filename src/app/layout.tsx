@@ -17,7 +17,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Programări — saloane în București",
+  title: "Lumé — saloane în București",
   description:
     "Găsește și rezervă servicii de înfrumusețare lângă tine, pe hartă, cu disponibilitate în timp real.",
 };

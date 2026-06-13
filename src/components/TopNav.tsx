@@ -11,9 +11,9 @@ export default function TopNav() {
       <nav className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
         <Link
           href="/"
-          className="text-lg font-bold tracking-tight text-slate-900"
+          className="font-display text-xl font-semibold italic tracking-tight text-slate-900"
         >
-          Programări
+          Lumé<span className="not-italic text-[#b8923f]">.</span>
         </Link>
 
         <div className="flex items-center gap-2 sm:gap-4">

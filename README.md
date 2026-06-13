@@ -1,6 +1,6 @@
 <div align="center">
 
-# Programări
+# Lumé
 
 ### A map-first booking platform for beauty services in Bucharest — with a real-time availability engine.
 
@@ -19,7 +19,7 @@
 <br />
 
 <p align="center">
-  <img src="docs/screenshots/01-map-home.png" alt="Programări — map discovery page" width="900" />
+  <img src="docs/screenshots/01-map-home.png" alt="Lumé — map discovery page" width="900" />
 </p>
 
 > **The killer feature — _„liber în 2h lângă tine”_.** Every salon's *next available slot* is computed live and shown on the map. Toggle **„Liber în 2h”** and the markers instantly narrow to places you can walk into within the next two hours — like watching nearby drivers on a ride-hailing app, but for an empty chair at the salon.

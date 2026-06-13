@@ -51,7 +51,7 @@ function Wordmark({ compact = false }: { compact?: boolean }) {
           compact ? "text-[19px]" : "text-[26px] leading-none"
         }`}
       >
-        Programări<span className="not-italic text-[#b8923f]">.</span>
+        Lumé<span className="not-italic text-[#b8923f]">.</span>
       </h1>
       {!compact && (
         <p className="mt-1.5 text-[9.5px] font-bold uppercase tracking-[0.24em] text-stone-400">

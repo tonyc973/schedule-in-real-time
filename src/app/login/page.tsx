@@ -97,9 +97,9 @@ function LoginCard() {
       <div className="mb-6 text-center">
         <Link
           href="/"
-          className="inline-block text-2xl font-bold tracking-tight text-slate-900"
+          className="inline-block font-display text-3xl font-semibold italic tracking-tight text-slate-900"
         >
-          Programări
+          Lumé<span className="not-italic text-[#b8923f]">.</span>
         </Link>
         <p className="mt-1 text-sm text-slate-500">
           {tab === "login"
@@ -233,7 +233,9 @@ function LoginFallback() {
   return (
     <div className="w-full max-w-md">
       <div className="mb-6 text-center">
-        <span className="text-2xl font-bold tracking-tight text-slate-900">Programări</span>
+        <span className="font-display text-3xl font-semibold italic tracking-tight text-slate-900">
+          Lumé<span className="not-italic text-[#b8923f]">.</span>
+        </span>
       </div>
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="h-10 animate-pulse rounded-xl bg-slate-100" />
